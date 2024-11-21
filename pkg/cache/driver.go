@@ -2,6 +2,7 @@ package cache
 
 import (
 	"encoding/gob"
+	model "github.com/cloudreve/Cloudreve/v3/models"
 	"github.com/cloudreve/Cloudreve/v3/pkg/conf"
 	"github.com/cloudreve/Cloudreve/v3/pkg/util"
 	"github.com/gin-gonic/gin"
@@ -12,7 +13,9 @@ func init() {
 }
 
 // Store 缓存存储器
-var Store Driver = NewMemoStore()
+var Store Driver = model.NewDBCacheStore()
+
+//var Store Driver = NewMemoStore()
 
 // Init 初始化缓存
 func Init() {

@@ -6,7 +6,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/cloudreve/Cloudreve/v3/pkg/cache"
 	"github.com/cloudreve/Cloudreve/v3/pkg/hashid"
 	"github.com/cloudreve/Cloudreve/v3/pkg/util"
 	"github.com/gin-gonic/gin"
@@ -143,7 +142,7 @@ func (share *Share) WasDownloadedBy(user *User, c *gin.Context) (exist bool) {
 	if user.IsAnonymous() {
 		exist = util.GetSession(c, fmt.Sprintf("share_%d_%d", share.ID, user.ID)) != nil
 	} else {
-		_, exist = cache.Get(fmt.Sprintf("share_%d_%d", share.ID, user.ID))
+		_, exist = cacheStore.Get(fmt.Sprintf("share_%d_%d", share.ID, user.ID))
 	}
 
 	return exist
@@ -154,7 +153,7 @@ func (share *Share) DownloadBy(user *User, c *gin.Context) error {
 	if !share.WasDownloadedBy(user, c) {
 		share.Downloaded()
 		if !user.IsAnonymous() {
-			cache.Set(fmt.Sprintf("share_%d_%d", share.ID, user.ID), true,
+			cacheStore.Set(fmt.Sprintf("share_%d_%d", share.ID, user.ID), true,
 				GetIntSetting("share_download_session_timeout", 2073600))
 		} else {
 			util.SetSession(c, map[string]interface{}{fmt.Sprintf("share_%d_%d", share.ID, user.ID): true})

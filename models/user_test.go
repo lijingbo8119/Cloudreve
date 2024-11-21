@@ -5,7 +5,6 @@ import (
 	"testing"
 
 	"github.com/DATA-DOG/go-sqlmock"
-	"github.com/cloudreve/Cloudreve/v3/pkg/cache"
 	"github.com/jinzhu/gorm"
 	"github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"
@@ -13,7 +12,7 @@ import (
 
 func TestGetUserByID(t *testing.T) {
 	asserts := assert.New(t)
-	cache.Deletes([]string{"1"}, "policy_")
+	cacheStore.Deletes([]string{"1"}, "policy_")
 	//找到用户时
 	userRows := sqlmock.NewRows([]string{"id", "deleted_at", "email", "options", "group_id"}).
 		AddRow(1, nil, "admin@cloudreve.org", "{}", 1)
@@ -65,7 +64,7 @@ func TestGetUserByID(t *testing.T) {
 
 func TestGetActiveUserByID(t *testing.T) {
 	asserts := assert.New(t)
-	cache.Deletes([]string{"1"}, "policy_")
+	cacheStore.Deletes([]string{"1"}, "policy_")
 	//找到用户时
 	userRows := sqlmock.NewRows([]string{"id", "deleted_at", "email", "options", "group_id"}).
 		AddRow(1, nil, "admin@cloudreve.org", "{}", 1)
@@ -177,7 +176,7 @@ func TestNewUser(t *testing.T) {
 
 func TestUser_AfterFind(t *testing.T) {
 	asserts := assert.New(t)
-	cache.Deletes([]string{"0"}, "policy_")
+	cacheStore.Deletes([]string{"0"}, "policy_")
 
 	policyRows := sqlmock.NewRows([]string{"id", "name"}).
 		AddRow(144, "默认存储策略")
@@ -224,7 +223,7 @@ func TestUser_GetPolicyID(t *testing.T) {
 func TestUser_GetRemainingCapacity(t *testing.T) {
 	asserts := assert.New(t)
 	newUser := NewUser()
-	cache.Set("pack_size_0", uint64(0), 0)
+	cacheStore.Set("pack_size_0", uint64(0), 0)
 
 	newUser.Group.MaxStorage = 100
 	asserts.Equal(uint64(100), newUser.GetRemainingCapacity())
@@ -245,7 +244,7 @@ func TestUser_GetRemainingCapacity(t *testing.T) {
 func TestUser_DeductionCapacity(t *testing.T) {
 	asserts := assert.New(t)
 
-	cache.Deletes([]string{"1"}, "policy_")
+	cacheStore.Deletes([]string{"1"}, "policy_")
 	userRows := sqlmock.NewRows([]string{"id", "deleted_at", "storage", "options", "group_id"}).
 		AddRow(1, nil, 0, "{}", 1)
 	mock.ExpectQuery("^SELECT (.+)").WillReturnRows(userRows)
@@ -259,7 +258,7 @@ func TestUser_DeductionCapacity(t *testing.T) {
 
 	newUser, err := GetUserByID(1)
 	newUser.Group.MaxStorage = 100
-	cache.Set("pack_size_1", uint64(0), 0)
+	cacheStore.Set("pack_size_1", uint64(0), 0)
 	asserts.NoError(err)
 	asserts.NoError(mock.ExpectationsWereMet())
 

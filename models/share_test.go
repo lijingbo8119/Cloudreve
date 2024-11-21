@@ -7,7 +7,6 @@ import (
 	"time"
 
 	"github.com/DATA-DOG/go-sqlmock"
-	"github.com/cloudreve/Cloudreve/v3/pkg/cache"
 	"github.com/cloudreve/Cloudreve/v3/pkg/conf"
 	"github.com/gin-gonic/gin"
 	"github.com/jinzhu/gorm"
@@ -217,7 +216,7 @@ func TestShare_WasDownloadedBy(t *testing.T) {
 		}
 		r := httptest.NewRecorder()
 		c, _ := gin.CreateTestContext(r)
-		cache.Set("share_1_1", true, 0)
+		cacheStore.Set("share_1_1", true, 0)
 		asserts.True(share.WasDownloadedBy(&user, c))
 	}
 }
@@ -232,7 +231,7 @@ func TestShare_DownloadBy(t *testing.T) {
 			ID: 1,
 		},
 	}
-	cache.Deletes([]string{"1_1"}, "share_")
+	cacheStore.Deletes([]string{"1_1"}, "share_")
 	r := httptest.NewRecorder()
 	c, _ := gin.CreateTestContext(r)
 
@@ -243,7 +242,7 @@ func TestShare_DownloadBy(t *testing.T) {
 	err := share.DownloadBy(&user, c)
 	asserts.NoError(mock.ExpectationsWereMet())
 	asserts.NoError(err)
-	_, ok := cache.Get("share_1_1")
+	_, ok := cacheStore.Get("share_1_1")
 	asserts.True(ok)
 }
 

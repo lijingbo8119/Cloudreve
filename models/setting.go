@@ -4,7 +4,6 @@ import (
 	"net/url"
 	"strconv"
 
-	"github.com/cloudreve/Cloudreve/v3/pkg/cache"
 	"github.com/jinzhu/gorm"
 )
 
@@ -32,7 +31,7 @@ func GetSettingByNameFromTx(tx *gorm.DB, name string) string {
 
 	// 优先从缓存中查找
 	cacheKey := "setting_" + name
-	if optionValue, ok := cache.Get(cacheKey); ok {
+	if optionValue, ok := cacheStore.Get(cacheKey); ok {
 		return optionValue.(string)
 	}
 
@@ -46,7 +45,7 @@ func GetSettingByNameFromTx(tx *gorm.DB, name string) string {
 
 	result := tx.Where("name = ?", name).First(&setting)
 	if result.Error == nil {
-		_ = cache.Set(cacheKey, setting.Value, -1)
+		_ = cacheStore.Set(cacheKey, setting.Value, -1)
 		return setting.Value
 	}
 
@@ -65,7 +64,7 @@ func GetSettingByNameWithDefault(name, fallback string) string {
 // GetSettingByNames 用多个 Name 获取设置值
 func GetSettingByNames(names ...string) map[string]string {
 	var queryRes []Setting
-	res, miss := cache.GetSettings(names, "setting_")
+	res, miss := cacheStore.GetSettings(names, "setting_")
 
 	if len(miss) > 0 {
 		DB.Where("name IN (?)", miss).Find(&queryRes)
@@ -74,7 +73,7 @@ func GetSettingByNames(names ...string) map[string]string {
 		}
 	}
 
-	_ = cache.SetSettings(res, "setting_")
+	_ = cacheStore.SetSettings(res, "setting_")
 	return res
 }
 

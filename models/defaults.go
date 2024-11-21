@@ -1,7 +1,6 @@
 package model
 
 import (
-	"github.com/cloudreve/Cloudreve/v3/pkg/cache"
 	"github.com/cloudreve/Cloudreve/v3/pkg/conf"
 	"github.com/cloudreve/Cloudreve/v3/pkg/util"
 	"github.com/gofrs/uuid"
@@ -141,6 +140,6 @@ Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; verti
 
 func InitSlaveDefaults() {
 	for _, setting := range defaultSettings {
-		cache.Set("setting_"+setting.Name, setting.Value, -1)
+		cacheStore.Set("setting_"+setting.Name, setting.Value, -1)
 	}
 }

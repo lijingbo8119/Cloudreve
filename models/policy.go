@@ -11,7 +11,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/cloudreve/Cloudreve/v3/pkg/cache"
 	"github.com/cloudreve/Cloudreve/v3/pkg/util"
 	"github.com/jinzhu/gorm"
 )
@@ -82,7 +81,7 @@ func init() {
 func GetPolicyByID(ID interface{}) (Policy, error) {
 	// 尝试读取缓存
 	cacheKey := "policy_" + strconv.Itoa(int(ID.(uint)))
-	if policy, ok := cache.Get(cacheKey); ok {
+	if policy, ok := cacheStore.Get(cacheKey); ok {
 		return policy.(Policy), nil
 	}
 
@@ -91,7 +90,7 @@ func GetPolicyByID(ID interface{}) (Policy, error) {
 
 	// 写入缓存
 	if result.Error == nil {
-		_ = cache.Set(cacheKey, policy, -1)
+		_ = cacheStore.Set(cacheKey, policy, -1)
 	}
 
 	return policy, result.Error
@@ -228,7 +227,7 @@ func (policy *Policy) UpdateAccessKeyAndClearCache(s string) error {
 
 // ClearCache 清空policy缓存
 func (policy *Policy) ClearCache() {
-	cache.Deletes([]string{strconv.FormatUint(uint64(policy.ID), 10)}, "policy_")
+	cacheStore.Delete([]string{strconv.FormatUint(uint64(policy.ID), 10)}, "policy_")
 }
 
 // CouldProxyThumb return if proxy thumbs is allowed for this policy.

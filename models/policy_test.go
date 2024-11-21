@@ -7,7 +7,6 @@ import (
 	"time"
 
 	"github.com/DATA-DOG/go-sqlmock"
-	"github.com/cloudreve/Cloudreve/v3/pkg/cache"
 	"github.com/jinzhu/gorm"
 	"github.com/stretchr/testify/assert"
 )
@@ -15,7 +14,7 @@ import (
 func TestGetPolicyByID(t *testing.T) {
 	asserts := assert.New(t)
 
-	cache.Deletes([]string{"22", "23"}, "policy_")
+	cacheStore.Deletes([]string{"22", "23"}, "policy_")
 	// 缓存未命中
 	{
 		rows := sqlmock.NewRows([]string{"name", "type", "options"}).
@@ -182,10 +181,10 @@ func TestPolicy_IsDirectlyPreview(t *testing.T) {
 
 func TestPolicy_ClearCache(t *testing.T) {
 	asserts := assert.New(t)
-	cache.Set("policy_202", 1, 0)
+	cacheStore.Set("policy_202", 1, 0)
 	policy := Policy{Model: gorm.Model{ID: 202}}
 	policy.ClearCache()
-	_, ok := cache.Get("policy_202")
+	_, ok := cacheStore.Get("policy_202")
 	asserts.False(ok)
 }
 
@@ -220,7 +219,7 @@ func TestPolicy_Props(t *testing.T) {
 
 func TestPolicy_UpdateAccessKeyAndClearCache(t *testing.T) {
 	a := assert.New(t)
-	cache.Set("policy_1331", Policy{}, 3600)
+	cacheStore.Set("policy_1331", Policy{}, 3600)
 	p := &Policy{}
 	p.ID = 1331
 	mock.ExpectBegin()
@@ -229,7 +228,7 @@ func TestPolicy_UpdateAccessKeyAndClearCache(t *testing.T) {
 
 	a.NoError(p.UpdateAccessKeyAndClearCache("ak"))
 	a.NoError(mock.ExpectationsWereMet())
-	_, ok := cache.Get("policy_1331")
+	_, ok := cacheStore.Get("policy_1331")
 	a.False(ok)
 }
 
@@ -245,25 +244,25 @@ func TestPolicy_CouldProxyThumb(t *testing.T) {
 	// feature not enabled
 	{
 		p.Type = "remote"
-		cache.Set("setting_thumb_proxy_enabled", "0", 0)
+		cacheStore.Set("setting_thumb_proxy_enabled", "0", 0)
 		a.False(p.CouldProxyThumb())
 	}
 
 	// list not contain current policy
 	{
 		p.ID = 2
-		cache.Set("setting_thumb_proxy_enabled", "1", 0)
-		cache.Set("setting_thumb_proxy_policy", "[1]", 0)
+		cacheStore.Set("setting_thumb_proxy_enabled", "1", 0)
+		cacheStore.Set("setting_thumb_proxy_policy", "[1]", 0)
 		a.False(p.CouldProxyThumb())
 	}
 
 	// enabled
 	{
 		p.ID = 2
-		cache.Set("setting_thumb_proxy_enabled", "1", 0)
-		cache.Set("setting_thumb_proxy_policy", "[2]", 0)
+		cacheStore.Set("setting_thumb_proxy_enabled", "1", 0)
+		cacheStore.Set("setting_thumb_proxy_policy", "[2]", 0)
 		a.True(p.CouldProxyThumb())
 	}
 
-	cache.Deletes([]string{"thumb_proxy_enabled", "thumb_proxy_policy"}, "setting_")
+	cacheStore.Deletes([]string{"thumb_proxy_enabled", "thumb_proxy_policy"}, "setting_")
 }

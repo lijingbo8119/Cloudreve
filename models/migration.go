@@ -3,7 +3,6 @@ package model
 import (
 	"context"
 	"github.com/cloudreve/Cloudreve/v3/models/scripts/invoker"
-	"github.com/cloudreve/Cloudreve/v3/pkg/cache"
 	"github.com/cloudreve/Cloudreve/v3/pkg/conf"
 	"github.com/cloudreve/Cloudreve/v3/pkg/util"
 	"github.com/fatih/color"
@@ -31,9 +30,7 @@ func migration() {
 	util.Log().Info("Start initializing database schema...")
 
 	// 清除所有缓存
-	if instance, ok := cache.Store.(*cache.RedisStore); ok {
-		instance.DeleteAll()
-	}
+	cacheStore.DeleteAll()
 
 	// 自动迁移模式
 	if conf.DatabaseConfig.Type == "mysql" {
@@ -41,7 +38,7 @@ func migration() {
 	}
 
 	DB.AutoMigrate(&User{}, &Setting{}, &Group{}, &Policy{}, &Folder{}, &File{}, &Share{},
-		&Task{}, &Download{}, &Tag{}, &Webdav{}, &Node{}, &SourceLink{})
+		&Task{}, &Download{}, &Tag{}, &Webdav{}, &Node{}, &SourceLink{}, &Cache{})
 
 	// 创建初始存储策略
 	addDefaultPolicy()

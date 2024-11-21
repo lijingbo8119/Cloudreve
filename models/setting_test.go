@@ -5,7 +5,6 @@ import (
 	"testing"
 
 	"github.com/DATA-DOG/go-sqlmock"
-	"github.com/cloudreve/Cloudreve/v3/pkg/cache"
 	"github.com/jinzhu/gorm"
 	"github.com/stretchr/testify/assert"
 )
@@ -28,7 +27,7 @@ func TestMain(m *testing.M) {
 }
 
 func TestGetSettingByType(t *testing.T) {
-	cache.Store = cache.NewMemoStore()
+	cacheStore.Store = cacheStore.NewMemoStore()
 	asserts := assert.New(t)
 
 	//找到设置时
@@ -69,7 +68,7 @@ func TestGetSettingByNameWithDefault(t *testing.T) {
 }
 
 func TestGetSettingByNames(t *testing.T) {
-	cache.Store = cache.NewMemoStore()
+	cacheStore.Store = cacheStore.NewMemoStore()
 	asserts := assert.New(t)
 
 	//找到设置时
@@ -115,7 +114,7 @@ func TestGetSettingByNames(t *testing.T) {
 
 // TestGetSettingByName 测试GetSettingByName
 func TestGetSettingByName(t *testing.T) {
-	cache.Store = cache.NewMemoStore()
+	cacheStore.Store = cacheStore.NewMemoStore()
 	asserts := assert.New(t)
 
 	//找到设置时
@@ -156,7 +155,7 @@ func TestGetSiteURL(t *testing.T) {
 
 	// 正常
 	{
-		err := cache.Deletes([]string{"siteURL"}, "setting_")
+		err := cacheStore.Deletes([]string{"siteURL"}, "setting_")
 		asserts.NoError(err)
 
 		mock.ExpectQuery("SELECT(.+)").WithArgs("siteURL").WillReturnRows(sqlmock.NewRows([]string{"id", "value"}).AddRow(1, "https://drive.cloudreve.org"))
@@ -167,7 +166,7 @@ func TestGetSiteURL(t *testing.T) {
 
 	// 失败 返回默认值
 	{
-		err := cache.Deletes([]string{"siteURL"}, "setting_")
+		err := cacheStore.Deletes([]string{"siteURL"}, "setting_")
 		asserts.NoError(err)
 
 		mock.ExpectQuery("SELECT(.+)").WithArgs("siteURL").WillReturnRows(sqlmock.NewRows([]string{"id", "value"}).AddRow(1, ":][\\/\\]sdf"))
@@ -182,7 +181,7 @@ func TestGetIntSetting(t *testing.T) {
 
 	// 正常
 	{
-		cache.Set("setting_TestGetIntSetting", "10", 0)
+		cacheStore.Set("setting_TestGetIntSetting", "10", 0)
 		res := GetIntSetting("TestGetIntSetting", 20)
 		asserts.Equal(10, res)
 	}
